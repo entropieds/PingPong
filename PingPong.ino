@@ -1,7 +1,11 @@
 #include "encoder.h"
-#define PIN_A1 2
-#define PIN_B1 5
-#define PIN_BTN1 4
+#include "max7219.h"
+#include "Engine.h"
+
+
+const uint8_t maxVal = 5; 
+const uint8_t minVal = 0;
+
 
 const uint8_t pinA1 = 2;
 const uint8_t pinB1 = 5;
@@ -11,17 +15,12 @@ const uint8_t pinA2 = 3;
 const uint8_t pinB2 = 7;
 const uint8_t pinBtn2 = 6;
 
-const unit8_t paddlePatternSize = 8;
+const uint8_t paddlePatternSize = 8;
 
 encoder paddleLeft;
 encoder paddleRight;
-
-uint8_t paddle = 0b00111000;
-uint8_t pattern[] = { paddle, 0, 0, 0, 0, 0, 0,  paddle };
-
-
-encoder Encoder;
 max7219Matrix MAX7219;
+engine Engine;
 
 void paddleLeft_ISR() { 
   paddleLeft.encoder_flag = true;
@@ -31,8 +30,8 @@ void paddleRight_ISR() {
   paddleRight.encoder_flag = true;
 }
 
-uint8_t dir1 = 0;
-uint8_t dir2 = 0;
+uint8_t Leftdir = 0;
+uint8_t Rightdir = 0;
 
 void setup() {
   paddleLeft.encoder_init(pinA1, pinB1, pinBtn1);
@@ -44,20 +43,60 @@ void setup() {
   SPI.setDataMode(SPI_MODE0);
   SPI.setClockDivider(SPI_CLOCK_DIV16);
   MAX7219.init_max7219();
-  MAX7219.send_pattern(pattern,paddlePatternSize);
+  MAX7219.send_pattern(Engine.pattern,paddlePatternSize);
   Serial.begin(9600);
 }
 
+
+
 void loop() {
-  dir = Encoder.read_encoder(PIN_A1, PIN_B1);
-  if (dir == 0){
-    Serial.print("encoder count: ");
-    Serial.println(count_encoder);
-    ++count_encoder;
-  } else if (dir == 1){
-    Serial.print("encoder count: ");
-    Serial.println(count_encoder);
-    --count_encoder;
+  static uint32_t startTime = millis();
+  if (paddleLeft.encoder_flag) {
+    Leftdir = paddleLeft.read_encoder(pinA1, pinB1);
+    paddleLeft.encoder_flag = false;
+    cli();
+    if (!Leftdir && (Engine.acceptAreaLeft > 2)) {
+      Engine.Leftpaddle >>= 1;
+      --Engine.acceptAreaLeft;
+    } else if (Leftdir && (Engine.acceptAreaLeft < 7)){
+      Engine.Leftpaddle <<= 1;
+      ++Engine.acceptAreaLeft;
+    }
+    Engine.pattern[0] = Engine.Leftpaddle;
+    sei();
   }
+
+  if (paddleRight.encoder_flag) {
+    Rightdir = paddleRight.read_encoder(pinA2, pinB2);
+    paddleRight.encoder_flag = false;
+    cli();
+    if (!Rightdir && (Engine.acceptAreaRight > 2)) {
+      Engine.Rightpaddle >>= 1;
+      --Engine.acceptAreaRight;
+    } else if (Rightdir && (Engine.acceptAreaRight < 7)){
+      Engine.Rightpaddle <<= 1;
+      ++Engine.acceptAreaRight;
+    }
+    Engine.pattern[7] = Engine.Rightpaddle;
+    sei(); 
+  }
+  
+  if (millis() - startTime >= 750) {
+    startTime = millis();
+    Engine.moveBall(Engine.pattern);
+  }
+
+  MAX7219.send_pattern(Engine.pattern,paddlePatternSize);
+  
 }
 
+/*
+direction getRandomDirection() {
+  uint8_t randomValue = random(minVal,maxVal);
+  return (direction)(randomValue);
+}*/
+
+/*
+bool evaluatePoss(uint8_t (&array) [8], uint8_t X_poss) {
+return false;
+}*/
