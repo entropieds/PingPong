@@ -3,16 +3,19 @@
 
 class engine {
   private:
-    uint8_t Y_axe = 0b00010000;
-    uint8_t X_axe = 3;
-    typedef enum  { west, east, northEast, southEast, southWest, northWest, newDir } direction;
-    direction dir = northEast;
+    uint8_t Y_axe ;
+    uint8_t X_axe;
+    uint8_t leftScore;
+    uint8_t rightScore;
+    typedef enum  { northEast, southEast, southWest, northWest, newRound } direction;
+    direction dir;
   public:
-    uint8_t Leftpaddle = 0b00111000;
-    uint8_t Rightpaddle = 0b00111000;
-    uint8_t acceptAreaLeft = 5;
-    uint8_t acceptAreaRight = 5;
-    uint8_t pattern[8] = { Leftpaddle, 0, 0, Y_axe, 0, 0, 0,  Rightpaddle};
+    uint8_t Leftpaddle;
+    uint8_t Rightpaddle;
+    uint8_t acceptAreaLeft;
+    uint8_t acceptAreaRight;
+    engine();
+    uint8_t pattern[8] = { 0, 0, 0, 0, 0, 0, 0, 0};
     void moveBall (uint8_t (&array) [8]);
     void newGame();
 };

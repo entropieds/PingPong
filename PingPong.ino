@@ -2,11 +2,6 @@
 #include "max7219.h"
 #include "Engine.h"
 
-
-const uint8_t maxVal = 5; 
-const uint8_t minVal = 0;
-
-
 const uint8_t pinA1 = 2;
 const uint8_t pinB1 = 5;
 const uint8_t pinBtn1 = 4;
@@ -14,8 +9,6 @@ const uint8_t pinBtn1 = 4;
 const uint8_t pinA2 = 3;
 const uint8_t pinB2 = 7;
 const uint8_t pinBtn2 = 6;
-
-const uint8_t paddlePatternSize = 8;
 
 encoder paddleLeft;
 encoder paddleRight;
@@ -43,7 +36,7 @@ void setup() {
   SPI.setDataMode(SPI_MODE0);
   SPI.setClockDivider(SPI_CLOCK_DIV16);
   MAX7219.init_max7219();
-  MAX7219.send_pattern(Engine.pattern,paddlePatternSize);
+  MAX7219.send_pattern(Engine.pattern,8);
   Serial.begin(9600);
 }
 
@@ -51,6 +44,10 @@ void setup() {
 
 void loop() {
   static uint32_t startTime = millis();
+  if (millis() < startTime) {
+    startTime = millis();
+  }
+
   if (paddleLeft.encoder_flag) {
     Leftdir = paddleLeft.read_encoder(pinA1, pinB1);
     paddleLeft.encoder_flag = false;
@@ -80,23 +77,12 @@ void loop() {
     Engine.pattern[7] = Engine.Rightpaddle;
     sei(); 
   }
-  
-  if (millis() - startTime >= 750) {
+
+  if (millis() - startTime >= 500) {
     startTime = millis();
     Engine.moveBall(Engine.pattern);
   }
 
-  MAX7219.send_pattern(Engine.pattern,paddlePatternSize);
+  MAX7219.send_pattern(Engine.pattern,8);
   
 }
-
-/*
-direction getRandomDirection() {
-  uint8_t randomValue = random(minVal,maxVal);
-  return (direction)(randomValue);
-}*/
-
-/*
-bool evaluatePoss(uint8_t (&array) [8], uint8_t X_poss) {
-return false;
-}*/

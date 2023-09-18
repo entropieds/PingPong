@@ -24,7 +24,7 @@ uint8_t encoder::read_button(uint8_t pin_btn){
 
 void encoder::debounce(uint8_t pin) {
   int8_t current_state = digitalRead(pin);
-  uint16_t state_count = 1200;
+  uint16_t state_count = 1500;
   while(state_count != 0){
     uint8_t new_state = digitalRead(pin);
     if (current_state == new_state){
