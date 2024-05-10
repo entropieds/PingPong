@@ -39,7 +39,7 @@ void max7219Matrix::init_max7219(){
   max7219Matrix::setup_decode_mode(0);      // set non decode mode
   max7219Matrix::setup_bright(0x00);        // set brightnes of diplay to lowest value
   max7219Matrix::setup_scan_limit(0x07);    // set scan limit display 
-  max7219Matrix::shut_down(0);              // turn on diplay
+  max7219Matrix::shut_down(false);          // turn on diplay
   max7219Matrix::setup_display_test(0x00);  // turn off test display
 }
 
@@ -86,8 +86,8 @@ void max7219Matrix::setup_scan_limit(uint8_t scanLimit){
 // example:
 //  max7219Matrix::shut_down(0x01); // trun off display
 
-void max7219Matrix::shut_down(uint8_t data){
-  if(data == 0)
+void max7219Matrix::shut_down(bool data){
+  if(!data)
     max7219Matrix::send_cmd(SHUTDOWN, 0x01);
   else
     max7219Matrix::send_cmd(SHUTDOWN, 0x00);
